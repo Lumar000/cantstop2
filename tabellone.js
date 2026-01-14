@@ -24,7 +24,7 @@ class Cantstop{
      * @returns il giocatore che ha vinto
      */
     async gioca(debug=false){
-        inizializzaPartita();
+        this.inizializzaPartita();
 
         // ogni turno di ogni giocatore
         while(true){
@@ -97,19 +97,17 @@ class Cantstop{
                 for(let i=2; i<tabelloneProvisorio.get(this.giocatore).length; i++){
                     if(i == opzioni[sceltaMax][0]){
                         tabelloneProvisorio.get(this.giocatore)[i]++;
-                        if(tabelloneProvisorio.get(this.giocatore)[i] >= colonneMax[i]){
+                        if(tabelloneProvisorio.get(this.giocatore)[i] >= this.colonneMax[i]){
                             tabelloneProvisorio.get(-1)[i] = 1;
                         }
                     }
                     if(i == opzioni[sceltaMax][1] &&  tabelloneProvisorio.get(-1)[i] != 1){
                         tabelloneProvisorio.get(this.giocatore)[i]++;
-                        if(tabelloneProvisorio.get(this.giocatore)[i] >= colonneMax[i]){
+                        if(tabelloneProvisorio.get(this.giocatore)[i] >= this.colonneMax[i]){
                             tabelloneProvisorio.get(-1)[i] = 1;
                         }
                     }
                 }
-
-                if(debug) console.log("tabellone: "+ this.giocatore +" | "+ tabelloneProvisorio.get(this.giocatore).slice(2) + " | "+ datiFormalizati[1] + " | " + opzioni[sceltaMax] + " | "+ opzioni +" | " + colonneInScalate);
 
             }while(sceltaGiocatore[0] >= 0.5);
 
@@ -123,8 +121,8 @@ class Cantstop{
                 //console.log("tabellone: "+ this.giocatore +" | "+ this.tabellone.get(this.giocatore) + " | "+ this.tabellone.get(-1));
                 //check vittoria
                 let contatoreVittoria = 0;
-                for(let i=2; i<colonneMax.length; i++){
-                    if(this.tabellone.get(this.giocatore)[i] >= colonneMax[i]){
+                for(let i=2; i<this.colonneMax.length; i++){
+                    if(this.tabellone.get(this.giocatore)[i] >= this.colonneMax[i]){
                         contatoreVittoria++;
                         if(contatoreVittoria == 3){
                             //console.log("tabellone: "+ this.giocatore +" , "+ this.tabellone.get(this.giocatore));
@@ -135,7 +133,7 @@ class Cantstop{
             }
             
             //passo giocatore
-            if(this.giocatore == this.nGiocatori-1) this.giocatore = 0;
+            if(this.giocatore == this.giocatori.length-1) this.giocatore = 0;
             else this.giocatore++;
         }
     }
@@ -147,8 +145,8 @@ class Cantstop{
         this.datasetInput = [];
         this.datasetOutput = [];
         this.tabellone = new Map();// reimposta il tabellone
-        this.giocatore = Math.floor(Math.random()*(this.nGiocatori-1)); //sceglie il giocatore iniziale in modo casuale tra 0 e nGiocatori-1
-        for(let i = -1; i<this.nGiocatori; i++){ // -1 è la maschera del tabellone, che indica quali colonne sono già state chiuse
+        this.giocatore = Math.floor(Math.random()*(this.giocatori.length-1)); //sceglie il giocatore iniziale in modo casuale tra 0 e nGiocatori-1
+        for(let i = -1; i<this.giocatori.length; i++){ // -1 è la maschera del tabellone, che indica quali colonne sono già state chiuse
             this.tabellone.set(i, [0,0,0,0,0,0,0,0,0,0,0,0,0]);    //elemento 0 e 1 non usati
         }  
     }
@@ -257,9 +255,9 @@ class Cantstop{
 
         //aggiungo tabellone avversari
         let tabelloneAvversari = [];
-        for(let i=2; i<colonneMax.length; i++){
+        for(let i=2; i<this.colonneMax.length; i++){
             let maxAltezza = 0;
-            for(let j=0; j<this.nGiocatori; j++){
+            for(let j=0; j<this.giocatori.length; j++){
                 if(j != this.giocatore){
                     if(tabelloneProvisorio.get(j)[i] > maxAltezza){
                         maxAltezza = tabelloneProvisorio.get(j)[i];

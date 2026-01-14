@@ -97,25 +97,34 @@ class GiocatoreEuristico extends Giocatore {
         if (!fs.existsSync(datasetPath)) {
             fs.mkdirSync(datasetPath, { recursive: true });
         }
-        
+
         const filePath = path.join(datasetPath, nomeFile);
-        let dataset = [];
-        
-        // Leggi il file esistente
-        if (fs.existsSync(filePath)) {
-            const fileContent = fs.readFileSync(filePath, 'utf8');
-            if (fileContent.trim()) {
-                dataset = JSON.parse(fileContent);
-            }
+        // Prepara i record da inserire: uno o più elementi JSON (senza parentesi)
+        let records = '';
+        if (Array.isArray(dati) && dati.length > 0 && (Array.isArray(dati[0]) || typeof dati[0] === 'object')) {
+            records = dati.map(item => JSON.stringify(item)).join(',\n');
+        } else {
+            records = JSON.stringify(dati);
         }
 
-        dataset = dataset.concat(dati);
+        // Se il file non esiste o è vuoto, scriviamo l'array completo
+        if (!fs.existsSync(filePath) || fs.statSync(filePath).size === 0) {
+            fs.writeFileSync(filePath, '[\n' + records + '\n]\n');
+            return;
+        }
 
-        // Riscrivi il file
-        fs.writeFileSync(
-            filePath,
-            JSON.stringify(dataset, null, 2)
-        );
+        // Leggi tutto il file (dataset solitamente non enorme). Normalizziamo e ri-scriviamo
+        let content = fs.readFileSync(filePath, 'utf8').trim();
+        if (content === '' || content === '[]') {
+            fs.writeFileSync(filePath, '[\n' + records + '\n]\n');
+            return;
+        }
+
+        // Rimuoviamo la parentesi di chiusura e eventuali virgole finali, poi aggiungiamo i nuovi record
+        let withoutClosing = content.replace(/\s*]$/, '');
+        withoutClosing = withoutClosing.replace(/,\s*$/, '');
+        const newContent = withoutClosing + ',\n' + records + '\n]\n';
+        fs.writeFileSync(filePath, newContent);
     }
 }
 
