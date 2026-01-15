@@ -15,7 +15,7 @@ async function main() {
     await giocatori[0].load();
     giocatori[1].variazionePesi(giocatori[0].getPesi(), 0.05);
 
-    for(i=0; i<1; i++){
+    for(i=0; i<20; i++){
         let giocateVinte = [];
         for(let j=0; j < giocatori.length; j++){
             giocateVinte.push(0);
@@ -47,6 +47,7 @@ async function main() {
 
         //salvo i pesi del campione
         await giocatori[0].save();
+        await giocatori[3].saveDataset("dataset.json");
     }
 }
 

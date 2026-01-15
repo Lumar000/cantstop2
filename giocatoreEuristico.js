@@ -11,6 +11,7 @@ class GiocatoreEuristico extends Giocatore {
      */
     constructor(salvaScelte=false) {
         super();
+        this.sceleteBuffer = [];
         this.salvaScelte = salvaScelte;
     }
 
@@ -80,8 +81,7 @@ class GiocatoreEuristico extends Giocatore {
 
         //salva i dataset se richiesto
         if(this.salvaScelte){
-            this.saveDataset(this.normalizzaInput(input, inputMax, inputMin), "dataset_input.json");
-            this.saveDataset(output, "dataset_output.json");
+            this.sceleteBuffer.push({input: this.normalizzaInput(input, inputMax, inputMin), output: output});
         }
 
         return output;
@@ -89,16 +89,21 @@ class GiocatoreEuristico extends Giocatore {
 
     /**
      * salva i datatset su file
-     * @param {int[]} dati 
      * @param {string} nomeFile 
      */
-    async saveDataset(dati, nomeFile) {
+    async saveDataset(nomeFile) {
+        if(!this.salvaScelte) return;
         // Crea la directory se non esiste
         if (!fs.existsSync(datasetPath)) {
             fs.mkdirSync(datasetPath, { recursive: true });
         }
 
         const filePath = path.join(datasetPath, nomeFile);
+
+        // Prendiamo i dati dal buffer delle scelte
+        const dati = Array.isArray(this.sceleteBuffer) ? this.sceleteBuffer : [];
+        if (dati.length === 0) return; // nulla da salvare
+
         // Prepara i record da inserire: uno o più elementi JSON (senza parentesi)
         let records = '';
         if (Array.isArray(dati) && dati.length > 0 && (Array.isArray(dati[0]) || typeof dati[0] === 'object')) {
@@ -110,6 +115,7 @@ class GiocatoreEuristico extends Giocatore {
         // Se il file non esiste o è vuoto, scriviamo l'array completo
         if (!fs.existsSync(filePath) || fs.statSync(filePath).size === 0) {
             fs.writeFileSync(filePath, '[\n' + records + '\n]\n');
+            this.sceleteBuffer = [];
             return;
         }
 
@@ -117,6 +123,7 @@ class GiocatoreEuristico extends Giocatore {
         let content = fs.readFileSync(filePath, 'utf8').trim();
         if (content === '' || content === '[]') {
             fs.writeFileSync(filePath, '[\n' + records + '\n]\n');
+            this.sceleteBuffer = [];
             return;
         }
 
@@ -125,6 +132,7 @@ class GiocatoreEuristico extends Giocatore {
         withoutClosing = withoutClosing.replace(/,\s*$/, '');
         const newContent = withoutClosing + ',\n' + records + '\n]\n';
         fs.writeFileSync(filePath, newContent);
+        this.sceleteBuffer = [];
     }
 }
 
